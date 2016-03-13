@@ -2,4 +2,3 @@ discord.py==0.8.0
 requests==2.7.0
 asyncio==3.4.3
 giphypop==0.2
-requests==2.7.0
