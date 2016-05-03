@@ -38,12 +38,12 @@ def on_message(message):
         author = message.author
         praise = give_praise(to)
         client.send_message(message.channel, '{0} has praised {1}, they are now @ {2}'.format(author, to, praise))
-    elif message.content.startswith('!spite'):
+    elif message.content.startswith('!smite'):
         to = message.content.split()[1]
         author = message.author
         spite = give_spite(to)
         client.send_message(message.channel, '{0} has spited {1}, they are now @ {2}'.format(author, to, spite))
-    elif message.content.startswith('!score'):
+    elif message.content.startswith('!rankings'):
         winner = ['No One', -999999999999999999999]
         for key in scores:
             if scores[key] > winner[1]:
@@ -51,6 +51,9 @@ def on_message(message):
                 winner[1] = scores[key]
             client.send_message(message.channel, '{0} has {1} points'.format(key, scores[key]))
         client.send_message(message.channel, '{0} is the winner'.format(winner[0]))
+    elif message.content.startswith('!absolve'):
+        scores = {}
+        client.send_message(message.channel, 'ALL HAVE BEEN ABSOLVED WE ARE ALL EQUAL NOW')
     elif message.content.startswith('!gif'):
         query = message.content.split()[1:]
         get_gif(message.channel, query)
