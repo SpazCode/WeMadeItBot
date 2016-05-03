@@ -47,12 +47,18 @@ def on_message(message):
         asyncio.sleep(5)
         client.send_message(message.channel, 'Done sleeping')
     elif message.content.startswith('!praise'):
-        to = message.content.split()[1]
+        try:
+            to = message.content.split()[1]
+        except:
+            to = "Not Chris"
         author = message.author
         praise = give_praise(to)
         client.send_message(message.channel, '{0} has praised {1}, they are now @ {2}'.format(author, to, praise))
     elif message.content.startswith('!smite'):
-        to = message.content.split()[1]
+        try:
+            to = message.content.split()[1]
+        except:
+            to = "Chris the Dick"
         author = message.author
         spite = give_spite(to)
         client.send_message(message.channel, '{0} has spited {1}, they are now @ {2}'.format(author, to, spite))
