@@ -1,15 +1,21 @@
 # -*- coding: UTF-8 -*-
 import os
-
+import re
 import discord
 import asyncio
 import time
 import requests
 import giphypop
 from random import randint
+from chatterbot import ChatBot
 
 client = discord.Client()
 client.login('blackwhitbywemadeit@outlook.com', '#WeMadeIt')
+
+chatbot = ChatBot("BlackWhitby", logic_adapter="chatterbot.adapters.logic.ClosestMatchAdapter")
+chatbot.train("chatterbot.corpus.english")
+chatbot.train("chatterbot.corpus.english.greetings")
+chatbot.train("chatterbot.corpus.english.conversations")
 
 scores = {}
 commands = {
@@ -24,6 +30,11 @@ commands = {
     "!doge": "Such Art, Much Doge, WOW",
     "!no": "NO"
 }
+
+sleep_comments = [
+    "No No No, please don't never again",
+    "...."
+]
 
 
 @client.event
@@ -85,6 +96,12 @@ def on_message(message):
     elif message.content.startswith('!help'):
         for key in commands:
             client.send_message(message.channel, '{0} - {1}'.format(key, commands[key]))
+    elif len(message.mentions) == 1:
+        user_id = message.mentions[0]
+        msg = message.content
+        msg = re.sub(r'<.*>', '', msg).strip()
+        res = chatbot.get_response(str(msg))
+        client.send_message(message.channel, res)
 
 
 
