@@ -98,11 +98,12 @@ def on_message(message):
             client.send_message(message.channel, '{0} - {1}'.format(key, commands[key]))
     elif len(message.mentions) == 1:
         user_id = message.mentions[0]
-        if user_id.startswith("WeMade"):
+        if str(user_id) == "WeMadeItBot":
             msg = message.content
             msg = re.sub(r'<.*>', '', msg).strip()
             res = chatbot.get_response(str(msg))
-            client.send_message(message.channel, res)
+            if len(res) > 0:
+                client.send_message(message.channel, res)
 
 
 
