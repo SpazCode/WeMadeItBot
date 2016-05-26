@@ -4,19 +4,36 @@ import re
 import discord
 import asyncio
 import time
+import json
+
+import httplib2
 import requests
 import giphypop
 from random import randint
 from chatterbot import ChatBot
+from apiclient import discovery
+import oauth2client
+from oauth2client import client
+from oauth2client import tools
 
+# Discord Client
 client = discord.Client()
-client.login('blackwhitbywemadeit@outlook.com', '#WeMadeIt')
+with open("cred.json") as f:
+    creds = json.load(f)
+client.login(creds['user'], creds['pass'])
 
+# Chatterbot Client
 chatbot = ChatBot("BlackWhitby", logic_adapter="chatterbot.adapters.logic.ClosestMatchAdapter")
 chatbot.train("chatterbot.corpus.english")
 chatbot.train("chatterbot.corpus.english.greetings")
 chatbot.train("chatterbot.corpus.english.conversations")
 
+# Drive API
+SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly'
+CLIENT_SECRET_FILE = 'client_secret.json'
+APPLICATION_NAME = 'WeMadeItBot'
+
+# Variables
 scores = {}
 commands = {
     "!test": "This is a test",
@@ -30,12 +47,21 @@ commands = {
     "!doge": "Such Art, Much Doge, WOW",
     "!no": "NO"
 }
-
 sleep_comments = [
     "No No No, please don't never again",
     "...."
 ]
 
+def get_credentials():
+    credential_path = 'wemadeitbot.json'
+    store = oauth2client.file.Storage(credential_path)
+    credentials = store.get()
+    if not credentials or credentials.invalid:
+        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
+        flow.user_agent = APPLICATION_NAME
+        credentials = tools.run(flow, store)
+        print('Storing credentials to ' + credential_path)
+    return credentials
 
 @client.event
 def on_ready():
@@ -96,6 +122,8 @@ def on_message(message):
     elif message.content.startswith('!help'):
         for key in commands:
             client.send_message(message.channel, '{0} - {1}'.format(key, commands[key]))
+    elif message.content.startswith('!drive'):
+        pass
     elif len(message.mentions) == 1:
         user_id = message.mentions[0]
         if str(user_id) == "WeMadeItBot":
@@ -148,5 +176,10 @@ def give_spite(person):
     else:
         scores[person] = -1
     return scores[person]
+
+
+def getDriveStatus():
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
 
 client.run()
