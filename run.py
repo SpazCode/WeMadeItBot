@@ -18,16 +18,31 @@ from oauth2client import tools
 
 # Discord Client
 client = discord.Client()
-with open("cred.json") as f:
-    creds = json.load(f)
-client.login(creds['user'], creds['pass'])
+env = os.environ.get("WemadeitEnv")
+pswd = ""
+usnm = ""
+if env == "production":
+    pswd = os.environ.get("password")
+    usnm = os.environ.get("username")
+else:
+    with open("cred.json") as f:
+        creds = json.load(f)
+        usnm = creds['user']
+        pswd = creds['pass']
+client.login(usnm, pswd)
 
 # Chatterbot Client
 chatbot = ChatBot("BlackWhitby", logic_adapter="chatterbot.adapters.logic.ClosestMatchAdapter")
 chatbot.train("chatterbot.corpus.english")
 chatbot.train("chatterbot.corpus.english.greetings")
 chatbot.train("chatterbot.corpus.english.conversations")
-
+# Todo add corpus for swearing
+swearing = {}
+with open("corpus/swearing.json") as f:
+    swearing = json.load(f)
+if "fuck" in swearing.keys():
+    for line in swearing["fuck"]:
+        chatbot.train(line)
 # Drive API
 SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
