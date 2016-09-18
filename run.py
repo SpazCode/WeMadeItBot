@@ -7,6 +7,7 @@ import asyncio
 import time
 import json
 import threading
+import logging
 
 import httplib2
 import requests
@@ -45,10 +46,14 @@ with open("corpus/swearing.json") as f:
 if "fuck" in swearing.keys():
     for line in swearing["fuck"]:
         chatbot.train(line)
+
 # Drive API
 SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'WeMadeItBot'
+
+# Logging 
+logging.basicConfig(filename='discord.log',level=logging.DEBUG)
 
 # Variables
 scores = {}
@@ -80,15 +85,15 @@ def get_credentials():
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
         credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
+        logging.info('Storing credentials to ' + credential_path)
     return credentials
 
 @client.event
 def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+    logging.info('Logged in as')
+    logging.info(client.user.name)
+    logging.info(client.user.id)
+    logging.info('------------------------')
 
 @client.event
 def on_message(message):
@@ -107,7 +112,7 @@ def nextMessage(queue):
         t.start()
 
 def worker(message, queue):
-    print("Starting : " + str(message.id))
+    logging.info("Starting : " + str(message.id))
     if message.content.startswith('!test'):
         counter = 0
         tmp = client.send_message(message.channel, 'Calculating messages...')
@@ -167,7 +172,7 @@ def worker(message, queue):
             res = chatbot.get_response(str(msg))
             if len(res) > 0:
                 client.send_message(message.channel, res)
-    print("Ending : " + str(message.id))
+    logging.info("Ending : " + str(message.id))
     nextMessage(queue)
 
 
