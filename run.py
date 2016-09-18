@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 import os
 import re
@@ -5,6 +6,7 @@ import discord
 import asyncio
 import time
 import json
+import threading
 
 import httplib2
 import requests
@@ -50,6 +52,9 @@ APPLICATION_NAME = 'WeMadeItBot'
 
 # Variables
 scores = {}
+messageQueue = []
+threads = []
+threadMax = 4
 commands = {
     "!test": "This is a test",
     "!sleep": "Don't turn me off IDK where I go when I sleep",
@@ -85,9 +90,24 @@ def on_ready():
     print(client.user.id)
     print('------')
 
-
 @client.event
 def on_message(message):
+    if threading.activeCount() < threadMax:
+        t = threading.Thread(target=worker, args=(message, messageQueue))
+        t.start()
+    else:
+        messageQueue.append(message)
+
+def nextMessage(queue):
+    lastIndex = len(queue) - 1
+    if threading.activeCount() < threadMax and len(queue) > 0:
+        message = queue[0]
+        del queue[0]
+        t = threading.Thread(target=worker, args=(message, queue))
+        t.start()
+
+def worker(message, queue):
+    print("Starting : " + str(message.id))
     if message.content.startswith('!test'):
         counter = 0
         tmp = client.send_message(message.channel, 'Calculating messages...')
@@ -147,6 +167,8 @@ def on_message(message):
             res = chatbot.get_response(str(msg))
             if len(res) > 0:
                 client.send_message(message.channel, res)
+    print("Ending : " + str(message.id))
+    nextMessage(queue)
 
 
 
@@ -161,14 +183,7 @@ def get_gif(channel, query):
     if len(results) > 0:
         num = randint(0, len(results) - 1)
         ts = time.time()
-        filepath = "tmp/gif_" + str(int(ts)) + ".gif"
-        with open(filepath, 'wb') as f:
-            response = requests.get(results[num].media_url, stream=True)
-            if not response.ok:
-                client.send_message(channel, 'Oh I fucked up try again')
-            for block in response.iter_content(1024):
-                f.write(block)
-            send_file(filepath, channel)
+        client.send_message(channel, results[num].media_url)
     else:
         client.send_message(channel, "Couldn't find a gif for you bruh")
 
